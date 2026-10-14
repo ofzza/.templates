@@ -1,0 +1,5 @@
+# LF everywhere, so a checkout on Windows (CI included) holds the same bytes as one on Linux or macOS;
+# tests comparing against literals or files would otherwise depend on the platform.
+* text=auto eol=lf
+
+*.png binary

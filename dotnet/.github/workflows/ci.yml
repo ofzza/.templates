@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [master, develop]
+  push:
+    branches: [master, develop]
+
+permissions:
+  contents: read
+
+# Supersede superseded pull request runs, but never cancel a run on master
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  ci:
+    name: ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        # Both path flavours and line-ending defaults, so platform-specific assumptions surface in CI
+        os: [ubuntu-latest, windows-latest]
+    env:
+      DOTNET_NOLOGO: true
+      DOTNET_CLI_TELEMETRY_OPTOUT: true
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - run: dotnet restore Template.DotNet.slnx
+
+      # Builds src, tests and samples
+      - run: dotnet build Template.DotNet.slnx -c Release --no-restore
+
+      - run: dotnet test Template.DotNet.slnx -c Release --no-build
+
+      # Proves every packable project still packs
+      - run: ./scripts/pack.sh
+        shell: bash
+
+      # Nothing is packed until a project sets IsPackable=true, so a missing package is not an error
+      - uses: actions/upload-artifact@v7
+        if: matrix.os == 'ubuntu-latest'
+        with:
+          name: packages
+          if-no-files-found: ignore
+          path: |
+            artifacts/packages/*.nupkg
+            artifacts/packages/*.snupkg

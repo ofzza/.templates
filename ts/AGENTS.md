@@ -42,8 +42,11 @@ This repository starts from the `.template-ts` TypeScript project template. It i
 
 ## Branching
 
-- **`develop` is the work-in-progress trunk.** Create every feature, fix or dependency branch from `develop`, and open every pull request against `develop`.
-- **`master` holds only the latest stable release.** Nothing is ever committed to it directly, and it never receives feature pull requests. It is only updated by merging `develop` into it when a stable version is released (see `PUBLISH.md`).
+- **Commit to the current branch by default.** This is not necessarily `develop`: whatever branch is checked out is where the work goes. Do not create a feature branch unless the user asks for one.
+- **Never commit to `master`, or onto a detached HEAD.** If the current branch is `master` (or there is none), stop and ask the user where the work should go: normally `develop` or a new feature branch.
+- **Propose a feature branch when a change warrants one.** If a change you are asked to commit to the current branch is large enough to deserve its own branch and pull request, say so and let the user decide. Do not branch on your own.
+- **Feature branches** are created from `develop` and named after the work, e.g. `feature/<short-topic>` or `fix/<short-topic>`. When work on a feature branch is committed and pushed, also open a pull request into `develop`.
+- **`develop` is the work-in-progress trunk.** **`master` holds only the latest stable release.** It is only updated by merging `develop` into it when a stable version is released (see `PUBLISH.md`).
 
 ## Commits
 
@@ -63,7 +66,7 @@ eslint.config.js           ESLint flat config (typescript-eslint + prettier comp
 dist/                      Build output, gitignored
 .github/workflows/ci.yml   GitHub Actions CI
 .github/dependabot.yml     Weekly dependency updates
-.vscode/extensions.json    Recommended VSCode extensions: ESLint, Prettier, Twoslash Query Comments
+.vscode/extensions.json    Recommended VSCode extensions: ESLint, Prettier, TODO Highlight, Twoslash Query Comments
 .vscode/launch.json        Vitest debug launch configs: all tests, unit tests, current file
 README.md                  User documentation
 CONTRIBUTE.md              Contributor guide: reporting issues, workflow, branching, architecture and glossary
