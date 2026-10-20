@@ -60,7 +60,7 @@ src/
   index.test.ts            Tests, colocated
 tsconfig.json              Type checking config. Includes everything (tests too), emits nothing
 tsconfig.build.json        Build config. Extends tsconfig.json, emits to dist/ with declarations, EXCLUDES *.test.ts / *.spec.ts
-vite.config.ts             Two Vitest projects: debug, unit
+vite.config.ts             Two Vitest projects: unit, and debug (only with VITEST_DEBUG=1)
 eslint.config.js           ESLint flat config (typescript-eslint + prettier compat, ignores what .gitignore ignores)
 .prettierrc                Prettier config
 dist/                      Build output, gitignored
@@ -103,7 +103,11 @@ Vitest, with `describe`/`it`/`expect` imported explicitly (`globals` is not enab
 
   `typecheck.spawnTimeout` is pinned to `10000`. Vitest 5 documents a default for it but never applies one, yet uses the value unguarded when spawning the checker, which leaves an intermittent race.
 
-- **`debug`** matches every file the `unit` project runs, plus files ending in `.debug.ts` / `.debug.js`. It executes them at runtime only, with no type checking, and is driven by the "Debug Current Test File" config in `.vscode/launch.json`. `.gitignore` excludes `*.debug.test.ts`. Those files also match the `unit` glob, so scratch debug tests run locally but are never committed.
+- **`debug`** matches every file the `unit` project runs, plus files ending in `.debug.ts` / `.debug.js`. It executes them at runtime only, with no type checking, and is driven by the "Debug Current Test File" config in `.vscode/launch.json`.
+
+  It is **only defined when `VITEST_DEBUG=1` is set**, so an unfiltered run (plain `vitest`, "Debug ALL Test Files", or a tool that runs every project it finds) does not run every test a second time. "Debug Current Test File" sets the variable through its `env`. From a terminal, set it yourself, e.g. `$ VITEST_DEBUG=1 npx vitest run --project debug src/index.test.ts`. Without it, `--project debug` fails with "No projects were found". There is deliberately no npm script for this: setting a variable inline is not portable to Windows, and a `test:debug` script would join `npm test`.
+
+  `.gitignore` excludes `*.debug.test.ts`. Those files also match the `unit` glob, so scratch debug tests run locally but are never committed.
 
 After adding or changing type-level assertions, sanity-check them: break one deliberately, confirm the run fails, then revert. Vitest prints an "experimental" warning for typecheck, which is expected.
 
